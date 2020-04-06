@@ -1,0 +1,148 @@
+DROP TABLE "Departments_Managers";
+DROP TABLE "Departments_Employees";
+DROP TABLE "Titles";
+DROP TABLE "Salaries";
+DROP TABLE "Employees";
+DROP TABLE "Departments";
+
+CREATE TABLE "Departments" (
+    "dept_no" VARCHAR   NOT NULL,
+    "dept_name" VARCHAR   NOT NULL,
+    CONSTRAINT "pk_Departments" PRIMARY KEY (
+        "dept_no"
+     )
+);
+
+CREATE TABLE "Departments_Employees" (
+    "emp_no" INTEGER   NOT NULL,
+    "dept_no" VARCHAR   NOT NULL,
+    "from_date" VARCHAR   NOT NULL,
+    "to_date" VARCHAR   NOT NULL,
+    CONSTRAINT "pk_Departments_Employees" PRIMARY KEY (
+        "emp_no","from_date","to_date"
+     )
+);
+
+CREATE TABLE "Departments_Managers" (
+    "dept_no" VARCHAR   NOT NULL,
+    "emp_no" INTEGER   NOT NULL,
+    "from_date" VARCHAR   NOT NULL,
+    "to_date" VARCHAR   NOT NULL,
+    CONSTRAINT "pk_Departments_Managers" PRIMARY KEY (
+        "emp_no"
+     )
+);
+
+CREATE TABLE "Employees" (
+    "emp_no" INTEGER   NOT NULL,
+    "birth_date" VARCHAR   NOT NULL,
+    "first_name" VARCHAR   NOT NULL,
+    "last_name" VARCHAR   NOT NULL,
+    "gender" VARCHAR   NOT NULL,
+    "hire_date" VARCHAR   NOT NULL,
+    CONSTRAINT "pk_Employees" PRIMARY KEY (
+        "emp_no"
+     )
+);
+
+CREATE TABLE "Salaries" (
+    "emp_no" INTEGER   NOT NULL,
+    "salary" INTEGER   NOT NULL,
+    "from_date" VARCHAR   NOT NULL,
+    "to_date" VARCHAR   NOT NULL,
+    CONSTRAINT "pk_Salaries" PRIMARY KEY (
+        "emp_no","from_date"
+     )
+);
+
+CREATE TABLE "Titles" (
+    "emp_no" INTEGER   NOT NULL,
+    "title" VARCHAR   NOT NULL,
+    "from_data" VARCHAR   NOT NULL,
+    "to_date" VARCHAR   NOT NULL,
+    CONSTRAINT "pk_Titles" PRIMARY KEY (
+        "emp_no","from_data"
+     )
+);
+
+ALTER TABLE "Departments_Employees" ADD CONSTRAINT "fk_Departments_Employees_dept_no" FOREIGN KEY("dept_no")
+REFERENCES "Departments" ("dept_no");
+
+ALTER TABLE "Departments_Managers" ADD CONSTRAINT "fk_Departments_Managers_dept_no" FOREIGN KEY("dept_no")
+REFERENCES "Departments" ("dept_no");
+
+-- Show each table
+SELECT * FROM "Departments"
+SELECT * FROM "Departments_Employees" 
+SELECT * FROM "Departments_Managers"
+SELECT * FROM "Employees"
+SELECT * FROM "Salaries" 
+SELECT * FROM "Titles" 
+
+-- Q1. For each player, list employee number, last name, first name, gender, and salary
+-- Join Tables
+SELECT "Employees".emp_no, "Employees".last_name, "Employees".first_name, "Employees".gender, "Salaries".salary
+FROM "Employees"
+INNER JOIN "Salaries" ON
+"Employees".emp_no="Salaries".emp_no
+
+-- Q2. List employees who were hired in 1986
+SELECT first_name, last_name, hire_date 
+FROM "Employees"
+WHERE hire_date >= '1986-01-01' and
+      hire_date < '1987-01-01'
+
+-- Q3. List the manager of each department with the following information: department number, department name, 
+-- the manager's employee number, last name, first name, and start and end employment dates.
+CREATE VIEW "Manager" AS 
+SELECT "Departments".dept_no, "Departments".dept_name, "Departments_Managers".emp_no, "Departments_Managers".from_date, "Departments_Managers".to_date
+FROM "Departments_Managers"
+INNER JOIN "Departments" ON
+"Departments_Managers".dept_no="Departments".dept_no
+SELECT * FROM "Manager" 
+
+SELECT "Manager".dept_no, "Manager".dept_name, "Manager".emp_no, "Employees".last_name, "Employees".first_name, "Manager".from_date, "Manager".to_date
+FROM "Manager"
+INNER JOIN "Employees" ON
+"Manager".emp_no="Employees".emp_no
+
+-- Q4. List the department of each employee with the following information:
+-- employee number, last name, first name, and department name.
+CREATE VIEW "Employee_Department" AS 
+SELECT "Departments".dept_no, "Departments".dept_name, "Departments_Employees".emp_no
+FROM "Departments"
+INNER JOIN "Departments_Employees" ON
+"Departments".dept_no="Departments_Employees".dept_no
+SELECT * FROM "Employee_Department" 
+
+CREATE VIEW "Employee_Detail" AS
+SELECT "Employee_Department".emp_no,"Employees".last_name, "Employees".first_name, "Employee_Department".dept_name
+FROM "Employee_Department"
+INNER JOIN "Employees" ON
+"Employee_Department".emp_no="Employees".emp_no
+
+-- Q5. List all employees whose first name is "Hercules" and last names begin with "B."
+SELECT * FROM "Employees"
+WHERE "first_name" = 'Hercules'
+AND "last_name" Like 'B%'; 
+
+-- Q6. List all employees in the Sales department, including their employee number, last name, first name, and department name.
+SELECT * FROM "Employee_Detail" 
+WHERE "dept_name" = 'Sales'
+
+-- Q7. List all employees in the Sales and Development departments, including their employee number, 
+-- last name, first name, and department name.
+SELECT * FROM "Employee_Detail" 
+WHERE "dept_name" = 'Sales'
+OR "dept_name" = 'Development'
+
+-- Q8. In descending order, list the frequency count of employee last names, i.e., how many employees share each last name.
+SELECT last_name, COUNT(last_name) as "last_name count" 
+FROM "Employees"
+GROUP BY last_name
+ORDER BY "last_name count" DESC
+
+
+
+
+
